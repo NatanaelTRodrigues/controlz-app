@@ -1,84 +1,55 @@
 // navigation/MainTabNavigator.js
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons'; // Ou o pacote de ícones que preferir
+
+// Importe as telas das abas
 import MainScreen from '../screens/MainScreen';
+import VoiceControlScreen from '../screens/VoiceControlScreen';
+import CadastroDispositivoScreen from '../screens/CadastroDispositivoScreen';
 
 const Tab = createBottomTabNavigator();
 
-const MainTabNavigator = () => {
+export default function MainTabNavigator() {
   return (
     <Tab.Navigator
-      initialRouteName="Home"
       screenOptions={{
-        headerShown: false, 
+        headerShown: false, // Vamos tirar o header padrão
+        tabBarActiveTintColor: '#SUA_COR_ATIVA', // Mantenha sua paleta
+        tabBarInactiveTintColor: 'gray',
         tabBarStyle: {
-          backgroundColor: '#12121e', 
-          borderTopColor: 'transparent',
-          height: 70, 
-          paddingBottom: 10,
+          backgroundColor: '#SUA_COR_DE_FUNDO_BARRA', // Mantenha sua paleta
         },
-        tabBarActiveTintColor: '#6a5ae6', 
-        tabBarInactiveTintColor: '#888', 
-        tabBarShowLabel: false, 
       }}
     >
       <Tab.Screen
-        name="Home"
-        component={MainScreen} // FUNCIONALIDADE: Volta para a tela principal
+        name="Controlar"
+        component={MainScreen} // Sua tela principal
         options={{
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="home-outline" size={30} color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home-outline" size={size} color={color} />
           ),
         }}
       />
       <Tab.Screen
-        name="Estatisticas"
-        component={MainScreen} // FUNCIONALIDADE: Volta para a tela principal
+        name="Voz"
+        component={VoiceControlScreen} // A nova tela de voz
         options={{
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="chart-bar" size={30} color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="mic-outline" size={size} color={color} />
           ),
-        }}
-      />
-       <Tab.Screen
-        name="Add"
-        component={MainScreen} // FUNCIONALIDADE: Volta para a tela principal
-        options={{
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="microphone-outline" size={35} color={'#fff'} />
-          ),
-          tabBarIconStyle: {
-            backgroundColor: '#6a5ae6', 
-            borderRadius: 50,
-            width: 50,
-            height: 50,
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginTop: -15,
-          }
-        }}
-      />
-       <Tab.Screen
-        name="Favoritos" 
-        component={MainScreen} // FUNCIONALIDADE: Volta para a tela principal
-        options={{
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="heart-outline" size={30} color={color} /> // Coração
-          ),
+          // TODO: Adicionar o botão customizado com animação
         }}
       />
       <Tab.Screen
-        name="Config" 
-        component={MainScreen} // FUNCIONALIDADE: Volta para a tela principal
+        name="Cadastrar"
+        component={CadastroDispositivoScreen} // Sua tela de cadastro
         options={{
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="settings-outline" size={30} color={color} /> // Configurações
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="add-circle-outline" size={size} color={color} />
           ),
         }}
       />
     </Tab.Navigator>
   );
-};
-
-export default MainTabNavigator;
+}

@@ -1,90 +1,128 @@
 // screens/CadastroDispositivoScreen.js
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native'; // NOVO: ScrollView para o corpo
+import React, { useState } from 'react';
+import { View, Text, TextInput, Button, StyleSheet, Alert, ScrollView } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 
-const PRIMARY_COLOR = '#6a5ae6';
-const TEXT_COLOR = '#fff';
-const ARROW_COLOR = '#888';
+// TODO: Use suas cores
+const PRIMARY_COLOR = '#007BFF';
+const BACKGROUND_COLOR = '#000000';
+const CARD_COLOR = '#1A1A1A';
+const TEXT_COLOR = '#FFFFFF';
+const INPUT_COLOR = '#333333';
 
-const ListItem = ({ name, iconName, onPress }) => (
-  <TouchableOpacity style={styles.listItem} onPress={onPress}> 
-    <View style={styles.itemContent}>
-        <Ionicons name={iconName} size={24} color={PRIMARY_COLOR} style={{ marginRight: 15 }} />
-        <Text style={styles.itemText}>{name}</Text>
-    </View>
-    <Ionicons name="arrow-forward" size={24} color={ARROW_COLOR} />
-  </TouchableOpacity>
-);
+export default function CadastroDispositivoScreen({ navigation }) {
+  const [name, setName] = useState('');
+  const [type, setType] = useState('LAMP'); // Tipo padrão
 
-const CadastroDispositivoScreen = ({ navigation }) => {
-  const navigateToCadastro2 = () => navigation.navigate('Cadastro2');
+  // REMOVEMOS a chamada ao 'useDevices' e 'addDevice'
+
+  const handleSave = () => {
+    if (!name.trim()) {
+      Alert.alert("Erro", "Por favor, dê um nome ao dispositivo.");
+      return;
+    }
+
+    // --- LÓGICA VISUAL ---
+    // Em vez de salvar no Firebase, apenas mostramos um alerta
+    // e limpamos o formulário.
+    Alert.alert(
+      "Sucesso! (Modo Visual)",
+      `O dispositivo "${name}" (${type}) foi "cadastrado".`
+    );
+
+    setName(''); // Limpa o formulário
+    setType('LAMP'); // Reseta o picker
+    navigation.navigate('Controlar'); // Volta para a tela principal
+    // ---------------------
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* CORREÇÃO: Envolvemos o conteúdo da tela em ScrollView para fluxo seguro */}
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-          <Text style={styles.subtitle}>Cadastre seu Novo Dispositivo</Text>
-          <Text style={styles.label}>Selecione o Dispositivo</Text>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <Text style={styles.title}>Cadastrar Dispositivo</Text>
 
-          <View style={styles.listContainer}>
-            <ListItem name="Câmera" iconName="videocam-outline" onPress={navigateToCadastro2} />
-            <ListItem name="Lâmpada" iconName="bulb-outline" onPress={navigateToCadastro2} />
-            <ListItem name="Tomada" iconName="power-outline" onPress={navigateToCadastro2} />
-            <ListItem name="Interruptor" iconName="toggle-outline" onPress={navigateToCadastro2} />
-            <ListItem name="Smart TV" iconName="tv-outline" onPress={navigateToCadastro2} />
-            <ListItem name="Ar Condicionado" iconName="snow-outline" onPress={navigateToCadastro2} />
+        <View style={styles.card}>
+          <Text style={styles.label}>Nome do Dispositivo</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Ex: Luz do Quarto"
+            placeholderTextColor="#888"
+            value={name}
+            onChangeText={setName}
+          />
+
+          <Text style={styles.label}>Tipo de Dispositivo</Text>
+          <View style={styles.pickerContainer}>
+            <Picker
+              style={styles.picker}
+              itemStyle={styles.pickerItem}
+              selectedValue={type}
+              onValueChange={(itemValue) => setType(itemValue)}
+              dropdownIconColor={TEXT_COLOR}
+            >
+              <Picker.Item label="Lâmpada Inteligente" value="LAMP" />
+              <Picker.Item label="Ar Condicionado" value="AC" />
+              <Picker.Item label="Cafeteira" value="COFFEE_MAKER" />
+              <Picker.Item label="Banheira" value="BATHTUB" />
+              <Picker.Item label="Portão" value="GATE" />
+              <Picker.Item label="Câmera" value="CAMERA" />
+            </Picker>
           </View>
+
+          <Button title="Salvar Dispositivo" onPress={handleSave} color={PRIMARY_COLOR} />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
-};
+}
 
+// Estilos (Mantenha os seus ou use estes)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#12121e',
+    backgroundColor: BACKGROUND_COLOR,
   },
-  scrollContent: {
-    paddingBottom: 20,
+  scrollContainer: {
+    padding: 20,
   },
-  subtitle: {
-    fontSize: 20,
+  title: {
+    fontSize: 28,
     fontWeight: 'bold',
     color: TEXT_COLOR,
-    marginTop: 10,
-    marginBottom: 10,
-    paddingHorizontal: 20,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  card: {
+    backgroundColor: CARD_COLOR,
+    borderRadius: 12,
+    padding: 20,
   },
   label: {
-    fontSize: 14,
-    color: ARROW_COLOR,
-    marginBottom: 20,
-    paddingHorizontal: 20,
-  },
-  listContainer: {
-    borderTopWidth: 1,
-    borderTopColor: '#3a3a50',
-  },
-  listItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 18,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#3a3a50',
-  },
-  itemContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  itemText: {
-    color: TEXT_COLOR,
     fontSize: 16,
-    fontWeight: '500',
+    color: TEXT_COLOR,
+    marginBottom: 10,
   },
+  input: {
+    width: '100%',
+    height: 50,
+    backgroundColor: INPUT_COLOR,
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    marginBottom: 20,
+    fontSize: 16,
+    color: TEXT_COLOR,
+  },
+  pickerContainer: {
+    backgroundColor: INPUT_COLOR,
+    borderRadius: 8,
+    marginBottom: 30,
+    overflow: 'hidden', // Para o picker arredondar
+  },
+  picker: {
+    color: TEXT_COLOR,
+  },
+  pickerItem: {
+    color: TEXT_COLOR,
+  }
 });
-
-export default CadastroDispositivoScreen;

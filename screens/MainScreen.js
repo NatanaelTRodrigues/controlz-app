@@ -1,172 +1,157 @@
 // screens/MainScreen.js
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Switch,
-  Dimensions,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRoute } from '@react-navigation/native';
+import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import ControlZLogo from '../components/ControlZLogo';
 
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = width * 0.4;
-const PRIMARY_COLOR = '#6a5ae6';
-const INACTIVE_CARD_BG = '#1c1c30';
+// Importe os componentes de controle
+import LampControl from '../components/controls/LampControl';
+import AcControl from '../components/controls/AcControl';
+import CoffeeControl from '../components/controls/CoffeeControl';
+import GenericSwitchControl from '../components/controls/GenericSwitchControl';
 
-// Card de dispositivo
-const DeviceCard = ({ name, icon, value, unit, isActive, onToggle }) => (
-  <View
-    style={[
-      styles.card,
-      { backgroundColor: isActive ? PRIMARY_COLOR : INACTIVE_CARD_BG },
-    ]}
-  >
-    <View style={styles.cardHeader}>
-      <Ionicons name={icon} size={24} color="#fff" />
-      <Switch
-        trackColor={{ false: '#767577', true: '#fff' }}
-        thumbColor={isActive ? PRIMARY_COLOR : '#f4f3f4'}
-        ios_backgroundColor="#3e3e3e"
-        onValueChange={onToggle}
-        value={isActive}
-      />
-    </View>
-    <Text style={styles.cardName}>{name}</Text>
-    {value !== undefined && (
-      <Text style={styles.cardValue}>
-        {value} {unit}
-      </Text>
-    )}
-  </View>
-);
+// TODO: Suas cores
+const BACKGROUND_COLOR = '#000000';
+const TEXT_COLOR = '#FFFFFF';
 
-const MainScreen = ({ navigation }) => {
-  const route = useRoute();
-  const userName = route.params?.userName || 'Usuário';
+// --- NOSSA LISTA DE DISPOSITIVOS "MOCK" ---
+// Estes são os dados que vão aparecer na tela
+const MOCK_DATA = [
+  {
+    id: '1',
+    name: 'Luz da Sala',
+    type: 'LAMP',
+    state: { isOn: false, brightness: 'medium', color: '#FFFFFF', mode: 'normal' }
+  },
+  {
+    id: '2',
+    name: 'Ar Condicionado',
+    type: 'AC',
+    state: { isOn: false, temperature: 22 }
+  },
+  {
+    id: '3',
+    name: 'Cafeteira',
+    type: 'COFFEE_MAKER',
+    state: { isBrewing: false, drinkType: 'espresso' }
+  },
+  {
+    id: '4',
+    name: 'Portão da Garagem',
+    type: 'GATE',
+    state: { isOpen: false }
+  },
+  {
+    id: '5',
+    name: 'Câmera da Entrada',
+    type: 'CAMERA',
+    state: { isOn: true }
+  },
+];
+// ---------------------------------------------
 
-  const [cameraActive, setCameraActive] = useState(true);
-  const [lampadaActive, setLampadaActive] = useState(true);
-  const [tomadaActive, setTomadaActive] = useState(false);
+export default function MainScreen() {
+  // --- O NOVO "CÉREBRO" ---
+  // Usamos useState para guardar nossa lista de dispositivos
+  const [devices, setDevices] = useState(MOCK_DATA);
+  const loading = false; // Nunca está "carregando"
+
+  // Esta função agora atualiza o estado local (o useState)
+  const updateDeviceState = (deviceId, newState) => {
+    setDevices(currentDevices => 
+      currentDevices.map(device => {
+        if (device.id === deviceId) {
+          // Encontramos o dispositivo, retornamos ele com o novo estado
+          return { ...device, state: newState };
+        }
+        // Se não for o dispositivo, apenas o retornamos como estava
+        return device;
+      })
+    );
+  };
+  // -------------------------
+
+  // O "Roteador" de Componentes (permanece igual)
+  const renderDevice = ({ item }) => {
+    const onUpdate = (newState) => updateDeviceState(item.id, newState);
+
+    switch (item.type) {
+      case 'LAMP':
+        return <LampControl device={item} onUpdate={onUpdate} />;
+      case 'AC':
+        return <AcControl device={item} onUpdate={onUpdate} />;
+      case 'COFFEE_MAKER':
+        return <CoffeeControl device={item} onUpdate={onUpdate} />;
+      case 'BATHTUB':
+        return <GenericSwitchControl device={item} onUpdate={onUpdate} stateKey="isOn" />;
+      case 'CAMERA':
+        return <GenericSwitchControl device={item} onUpdate={onUpdate} stateKey="isOn" />;
+      case 'GATE':
+        return <GenericSwitchControl device={item} onUpdate={onUpdate} stateKey="isOpen" />;
+      default:
+        return (
+          <View style={styles.card}>
+            <Text style={styles.title}>Dispositivo desconhecido: {item.name}</Text>
+          </View>
+        );
+    }
+  };
 
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Cabeçalho */}
-        <View style={styles.topHeaderContainer}>
-          <ControlZLogo />
-          <TouchableOpacity
-            style={styles.newDeviceButton}
-            onPress={() => navigation.navigate('Cadastro1')}
-          >
-            <Text style={styles.newDeviceText}>Novo Dispositivo</Text>
-            <Ionicons name="add" size={20} color="#fff" />
-          </TouchableOpacity>
-        </View>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <ControlZLogo />
+      </View>
 
-        {/* Saudação */}
-        <View style={styles.greetingContainer}>
-          <Text style={styles.greeting}>Olá, {userName}</Text>
-        </View>
-
-        {/* Consumo total */}
-        <View style={styles.totalConsumption}>
-          <Text style={styles.totalValue}>115.2 kWh</Text>
-          <Text style={styles.totalLabel}>Total de Consumo</Text>
-        </View>
-
-        {/* Câmeras */}
-        <Text style={styles.sectionTitle}>Câmeras</Text>
-        <View style={styles.cardRow}>
-          <DeviceCard
-            name="Câmera Hugo"
-            icon="videocam-outline"
-            value={0.5}
-            unit="kWh"
-            isActive={cameraActive}
-            onToggle={() => setCameraActive(prev => !prev)}
-          />
-          <DeviceCard
-            name="Câmera 2"
-            icon="videocam-outline"
-            value={0}
-            unit="kWh"
-            isActive={false}
-            onToggle={() => {}}
-          />
-        </View>
-
-        {/* Outros dispositivos */}
-        <Text style={styles.sectionTitle}>Outros Dispositivos</Text>
-        <View style={styles.cardRow}>
-          <DeviceCard
-            name="Lâmpada Sala"
-            icon="bulb-outline"
-            value={115.2}
-            unit="kWh"
-            isActive={lampadaActive}
-            onToggle={() => setLampadaActive(prev => !prev)}
-          />
-          <DeviceCard
-            name="Tomada PC"
-            icon="power-outline"
-            value={15.2}
-            unit="kWh"
-            isActive={tomadaActive}
-            onToggle={() => setTomadaActive(prev => !prev)}
-          />
-        </View>
-      </ScrollView>
-    </View>
+      {/* Não precisamos mais do "loading" */}
+      <FlatList
+        data={devices}
+        renderItem={renderDevice}
+        keyExtractor={(item) => item.id}
+        ListEmptyComponent={
+          <View style={styles.centered}>
+            <Text style={styles.emptyText}>Nenhum dispositivo cadastrado.</Text>
+          </View>
+        }
+        contentContainerStyle={{ paddingBottom: 20 }}
+      />
+    </SafeAreaView>
   );
-};
+}
 
+// Copie os estilos do seu MainScreen.js antigo aqui
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#12121e' },
-  scrollContent: { paddingHorizontal: 15, paddingBottom: 20 },
-  topHeaderContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 15,
+  container: {
+    flex: 1,
+    backgroundColor: BACKGROUND_COLOR,
   },
-  greetingContainer: { marginBottom: 20 },
-  greeting: { fontSize: 24, fontWeight: '600', color: '#fff' },
-  newDeviceButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1c1c30',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 20,
-  },
-  newDeviceText: { color: '#fff', marginRight: 5, fontSize: 14 },
-  totalConsumption: {
-    backgroundColor: PRIMARY_COLOR,
+  header: {
     padding: 20,
-    borderRadius: 15,
     alignItems: 'center',
-    marginBottom: 30,
-    width: CARD_WIDTH,
-    alignSelf: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
   },
-  totalValue: { fontSize: 32, fontWeight: 'bold', color: '#fff' },
-  totalLabel: { fontSize: 14, color: '#fff' },
-  sectionTitle: {
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 50,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: 'gray',
+    textAlign: 'center',
+  },
+  card: {
+    backgroundColor: '#333',
+    marginHorizontal: 15,
+    marginVertical: 8,
+    padding: 15,
+    borderRadius: 12,
+  },
+  title: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#fff',
-    marginBottom: 15,
-  },
-  cardRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
-  card: { width: CARD_WIDTH, padding: 15, borderRadius: 10, height: 150, justifyContent: 'space-between' },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  cardName: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
-  cardValue: { color: '#fff', fontSize: 14 },
+    fontWeight: 'bold',
+    color: TEXT_COLOR,
+  }
 });
-
-export default MainScreen;
